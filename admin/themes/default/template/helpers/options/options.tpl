@@ -27,6 +27,10 @@
 
 <script type="text/javascript">
 	id_language = Number({$current_id_lang});
+	{if isset($tabs) && $tabs|count}
+		var helper_tabs= {$tabs|json_encode};
+		var unique_field_id = '{$table}_';
+	{/if}
 </script>
 {block name="defaultOptions"}
 <form action="{$current}&amp;token={$token}"
@@ -59,6 +63,7 @@
 				</label>
 				<div class="col-lg-9">
 					<span class="switch prestashop-switch fixed-width-lg">
+						{strip}
 						<input type="radio" name="{$table}_multishop_{$category}" id="{$table}_multishop_{$category}_on" value="1" onclick="toggleAllMultishopDefaultValue($('#{$table}_fieldset_{$category}'), true)">
 						<label for="{$table}_multishop_{$category}_on">
 							{l s='Yes'}
@@ -67,6 +72,7 @@
 						<label for="{$table}_multishop_{$category}_off">
 							{l s='No'}
 						</label>
+						{/strip}
 						<a class="slide-button btn"></a>
 					</span>
 					<div class="row">
@@ -81,11 +87,12 @@
 			</div>
 			{/if}
 
+			<div class="form-wrapper">
 			{foreach $categoryData['fields'] AS $key => $field}
 					{if $field['type'] == 'hidden'}
 						<input type="hidden" name="{$key}" value="{$field['value']}" />
 					{else}
-						<div class="form-group {if isset($field.form_group_class)} {$field.form_group_class} {/if}">
+						<div class="form-group {if isset($field.form_group_class)} {$field.form_group_class} {/if}" {if isset($tabs) && isset($field.tab)}data-tab-id="{$field.tab}"{/if}>
 							<div id="conf_id_{$key}" {if $field['is_invisible']} class="isInvisible"{/if}>								
 								{block name="label"}
 									{if isset($field['title']) && isset($field['hint'])}
@@ -116,7 +123,7 @@
 											{/if}
 											{$field['title']}
 										</label>
-									{/if}									
+									{/if}
 								{/block}
 								{block name="field"}
 
@@ -124,7 +131,7 @@
 									{if $field['type'] == 'select'}
 										<div class="col-lg-9">
 											{if $field['list']}
-												<select class="fixed-width-xxl" name="{$key}"{if isset($field['js'])} onchange="{$field['js']}"{/if} id="{$key}" {if isset($field['size'])} size="{$field['size']}"{/if}>
+												<select class="form-control fixed-width-xxl {if isset($field['class'])}{$field['class']}{/if}" name="{$key}"{if isset($field['js'])} onchange="{$field['js']}"{/if} id="{$key}" {if isset($field['size'])} size="{$field['size']}"{/if}>
 													{foreach $field['list'] AS $k => $option}
 														<option value="{$option[$field['identifier']]}"{if $field['value'] == $option[$field['identifier']]} selected="selected"{/if}>{$option['name']}</option>
 													{/foreach}
@@ -136,6 +143,7 @@
 									{elseif $field['type'] == 'bool'}
 										<div class="col-lg-9">
 											<span class="switch prestashop-switch fixed-width-lg">
+												{strip}
 												<input type="radio" name="{$key}" id="{$key}_on" value="1" {if $field['value']} checked="checked"{/if}{if isset($field['js']['on'])} {$field['js']['on']}{/if}/>
 												<label for="{$key}_on" class="radioCheck">
 													{l s='Yes'}
@@ -144,6 +152,7 @@
 												<label for="{$key}_off" class="radioCheck">
 													{l s='No'}
 												</label>
+												{/strip}
 												<a class="slide-button btn"></a>
 											</span>
 										</div>
@@ -151,10 +160,12 @@
 										<div class="col-lg-9">
 											{foreach $field['choices'] AS $k => $v}
 												<p class="radio">
+													{strip}
 													<label for="{$key}_{$k}">
 														<input type="radio" name="{$key}" id="{$key}_{$k}" value="{$k}"{if $k == $field['value']} checked="checked"{/if}{if isset($field['js'][$k])} {$field['js'][$k]}{/if}/>
 													 	{$v}
 													</label>
+													{/strip}
 												</p>
 											{/foreach}
 										</div>
@@ -162,14 +173,18 @@
 										<div class="col-lg-9">
 											{foreach $field['choices'] AS $k => $v}
 												<p class="checkbox">
-													<input type="checkbox" name="{$key}" id="{$key}{$k}_on" value="{$k|intval}"{if $k == $field['value']} checked="checked"{/if}{if isset($field['js'][$k])} {$field['js'][$k]}{/if}/>
-													<label class="col-lg-3" for="{$key}{$k}_on"> {$v}</label>
+													{strip}
+													<label class="col-lg-3" for="{$key}{$k}_on">
+														<input type="checkbox" name="{$key}" id="{$key}{$k}_on" value="{$k|intval}"{if $k == $field['value']} checked="checked"{/if}{if isset($field['js'][$k])} {$field['js'][$k]}{/if}/>
+													 	{$v}
+													</label>
+													{/strip}
 												</p>
 											{/foreach}
 										</div>
 									{elseif $field['type'] == 'text'}
 										<div class="col-lg-9">{if isset($field['suffix'])}<div class="input-group">{/if}
-											<input type="{$field['type']}"{if isset($field['id'])} id="{$field['id']}"{/if} size="{if isset($field['size'])}{$field['size']|intval}{else}5{/if}" name="{$key}" value="{$field['value']|escape:'html':'UTF-8'}" {if isset($field['autocomplete']) && !$field['autocomplete']}autocomplete="off"{/if}/>
+											<input class="form-control {if isset($field['class'])}{$field['class']}{/if}" type="{$field['type']}"{if isset($field['id'])} id="{$field['id']}"{/if} size="{if isset($field['size'])}{$field['size']|intval}{else}5{/if}" name="{$key}" value="{$field['value']|escape:'html':'UTF-8'}" {if isset($field['autocomplete']) && !$field['autocomplete']}autocomplete="off"{/if}/>
 											{if isset($field['suffix'])}
 											<span class="input-group-addon">
 												{$field['suffix']|strval}
@@ -322,6 +337,8 @@
 						</div>
 				{/if}
 			{/foreach}
+			</div><!-- /.form-wrapper -->
+
 			{if isset($categoryData['bottom'])}{$categoryData['bottom']}{/if}
 			{block name="footer"}
 				{if isset($categoryData['submit']) || isset($categoryData['buttons'])}
@@ -331,7 +348,11 @@
 						{/if}
 						{if isset($categoryData['buttons'])}
 						{foreach from=$categoryData['buttons'] item=btn key=k}
+						{if isset($btn.href) && trim($btn.href) != ''}
+							<a href="{$btn.href}" {if isset($btn['id'])}id="{$btn['id']}"{/if} class="btn btn-default{if isset($btn['class'])} {$btn['class']}{/if}" {if isset($btn.js) && $btn.js} onclick="{$btn.js}"{/if}>{if isset($btn['icon'])}<i class="{$btn['icon']}" ></i> {/if}{$btn.title}</a>
+						{else}
 							<button type="{if isset($btn['type'])}{$btn['type']}{else}button{/if}" {if isset($btn['id'])}id="{$btn['id']}"{/if} class="{if isset($btn['class'])}{$btn['class']}{else}btn btn-default{/if}" name="{if isset($btn['name'])}{$btn['name']}{else}submitOptions{$table}{/if}"{if isset($btn.js) && $btn.js} onclick="{$btn.js}"{/if}>{if isset($btn['icon'])}<i class="{$btn['icon']}" ></i> {/if}{$btn.title}</button>
+						{/if}
 						{/foreach}
 						{/if}
 					</div>
